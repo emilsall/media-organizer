@@ -105,7 +105,7 @@ bun run media-organizer.js ~/Pictures --execute
 
 ## Binaries
 - macOS: dist/media-organizer-macos-arm64, dist/media-organizer-macos-x64
-- Linux: dist/media-organizer-linux-arm64, dist/media-organizer-linux-x64
+- Linux: dist/media-organizer-linux-x64, dist/media-organizer-linux-arm64
 - Windows: dist/media-organizer-windows-x64
 
 These are self-contained binaries built with Bun’s compiler.
@@ -131,6 +131,103 @@ GitHub Actions workflow included: `.github/workflows/release.yml`.
 - Triggers on `v*` tags or manually via workflow dispatch.
 - Builds on macOS, Linux, and Windows and uploads artifacts.
 - Publishes a GitHub release with binaries and `SHA256SUMS.txt`.
+
+## Prebuilt Releases
+Download the latest prebuilt binaries from the GitHub Releases page:
+
+https://github.com/emilsall/media-organizer/releases
+
+Each release includes:
+- Platform-specific binaries (macOS arm64/x64, Linux x64/arm64, Windows x64)
+- `SHA256SUMS.txt` for checksum verification
+
+### Choosing the Right Binary
+- macOS: Apple Silicon → `media-organizer-macos-arm64`; Intel → `media-organizer-macos-x64`
+- Linux: `media-organizer-linux-x64` or `media-organizer-linux-arm64`
+- Windows: `media-organizer-windows-x64.exe`
+
+### Artifact Names (Quick Reference)
+- macOS (arm64): `media-organizer-macos-arm64`
+- macOS (x64/Intel): `media-organizer-macos-x64`
+- Linux (x64): `media-organizer-linux-x64`
+- Linux (arm64): `media-organizer-linux-arm64`
+- Windows (x64): `media-organizer-windows-x64.exe`
+
+Download them from the Releases page: https://github.com/emilsall/media-organizer/releases
+
+macOS Intel (x64):
+- Current releases target Apple Silicon (arm64). For Intel Macs, build locally to produce `media-organizer-macos-x64`.
+```bash
+# On an Intel Mac
+bun run build
+# Output: dist/media-organizer-macos-x64
+```
+Alternatively, you can run the CLI without a binary:
+```bash
+bun run media-organizer.js /path/to/media
+```
+
+Verify your architecture:
+```bash
+uname -m     # macOS/Linux: arm64 or x86_64
+```
+On Windows, open PowerShell and run:
+```powershell
+[Environment]::Is64BitOperatingSystem
+```
+
+### macOS: First-Run Notes (Gatekeeper)
+Files downloaded from the internet may be quarantined. If you see a "file is damaged" or it’s immediately killed, remove the quarantine and make it executable:
+```bash
+# Optional: remove quarantine on the ZIP before extracting
+xattr -d com.apple.quarantine ~/Downloads/media-organizer-macos-arm64.zip
+
+# Remove quarantine on the binary
+xattr -r -d com.apple.quarantine ./media-organizer-macos-arm64
+
+# Ensure it’s executable
+chmod +x ./media-organizer-macos-arm64
+
+# Optional: ad-hoc codesign to satisfy Gatekeeper
+codesign --force --sign - ./media-organizer-macos-arm64
+
+# Check Gatekeeper assessment (optional)
+spctl --assess --type execute -vv ./media-organizer-macos-arm64
+```
+Then run:
+```bash
+./media-organizer-macos-arm64 --help
+```
+
+### Windows: First-Run Notes (SmartScreen)
+Windows may warn because the binary isn’t signed yet.
+- If SmartScreen appears, click "More info" → "Run anyway".
+- Or right-click the `.exe` → Properties → check "Unblock" → Apply.
+- If Windows Defender quarantines the file, allow the app in Defender settings.
+
+Run:
+```powershell
+./media-organizer-windows-x64.exe --help
+```
+
+### Linux: First-Run Notes
+Mark the binary executable and run. If you see "permission denied", ensure the folder isn’t mounted with `noexec`.
+```bash
+chmod +x ./media-organizer-linux-x64
+./media-organizer-linux-x64 --help
+
+# If permission denied, check mount options
+mount | grep noexec
+```
+
+Linux arm64 builds are included in releases; if building locally, use an arm64 machine.
+
+### Checksums
+Verify downloaded binaries against the release checksums:
+```bash
+cd dist
+sha256sum -c SHA256SUMS.txt
+```
 
 ## Notes & Limitations
 - EXIF parsing is lightweight and covers common JPEG/TIFF paths; for HEIC/RAW variations, fallback to filesystem dates may occur.

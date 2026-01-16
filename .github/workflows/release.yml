@@ -43,14 +43,82 @@ jobs:
       - name: Build binary
         run: bun run build
 
+      - name: Upload macOS arm64 artifact
+        if: ${{ matrix.os == 'macos-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-organizer-macos-arm64
+          path: dist/media-organizer-macos-arm64
+
+      - name: Upload Linux x64 artifact
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-organizer-linux-x64
+          path: dist/media-organizer-linux-x64
+
+      - name: Upload Windows x64 artifact
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-organizer-windows-x64
+          path: dist/media-organizer-windows-x64.exe
+
+  build-macos-intel:
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun (Intel)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+          no-cache: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build binary (macOS x64)
+        run: bun run build
+
+      - name: Upload macOS x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-organizer-macos-x64
+          path: dist/media-organizer-macos-x64
+
+  build-linux-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build on arm64 via QEMU
+        uses: uraimo/run-on-arch-action@v2.6.1
+        with:
+          arch: aarch64
+          distro: ubuntu22.04
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          install: |
+            apt-get update && apt-get install -y curl unzip
+          run: |
+            curl -fsSL https://bun.sh/install | bash
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+            bun --version
+            bun install
+            bun run build
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: media-organizer-${{ matrix.os }}
-          path: dist/*
+          name: media-organizer-linux-arm64
+          path: dist/media-organizer-linux-arm64
 
   release:
-    needs: build
+    needs: [build, build-macos-intel, build-linux-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: write
