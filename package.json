@@ -1,6 +1,6 @@
 {
   "name": "media-organizer",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Organize and deduplicate photos, RAW files, and videos by date",
   "type": "module",
   "bin": {
