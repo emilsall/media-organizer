@@ -367,20 +367,49 @@ function MediaOrganizer({ dryRun = true, targetPath }) {
       }
       // Let TextInput handle other chars
     } else {
-      // Actions
+      // Actions (togglable)
       if (input && input.toLowerCase() === 'i') {
-        setOverrides((prev) => ({ ...prev, [selectedIndex]: { type: 'ignore' } }));
+        setOverrides((prev) => {
+          const current = prev[selectedIndex];
+          const next = { ...prev };
+          if (current?.type === 'ignore') {
+            delete next[selectedIndex];
+          } else {
+            next[selectedIndex] = { type: 'ignore' };
+          }
+          return next;
+        });
         return;
       }
       if (input && input.toLowerCase() === 'd') {
-        setOverrides((prev) => ({ ...prev, [selectedIndex]: { type: 'delete' } }));
+        setOverrides((prev) => {
+          const current = prev[selectedIndex];
+          const next = { ...prev };
+          if (current?.type === 'delete') {
+            delete next[selectedIndex];
+          } else {
+            next[selectedIndex] = { type: 'delete' };
+          }
+          return next;
+        });
         return;
       }
       if (input && input.toLowerCase() === 'r') {
-        const op = operations[selectedIndex];
-        const initialName = op.type === 'move' ? basename(op.target) : basename(op.source);
-        setRenameInput(initialName);
-        setRenameMode(true);
+        const current = overrides[selectedIndex];
+        if (current?.type === 'rename') {
+          // Toggle off rename override
+          setOverrides((prev) => {
+            const next = { ...prev };
+            delete next[selectedIndex];
+            return next;
+          });
+        } else {
+          // Enter rename mode
+          const op = operations[selectedIndex];
+          const initialName = op.type === 'move' ? basename(op.target) : basename(op.source);
+          setRenameInput(initialName);
+          setRenameMode(true);
+        }
         return;
       }
     }
@@ -478,7 +507,7 @@ function MediaOrganizer({ dryRun = true, targetPath }) {
               {operations.map((op, i) => {
                 const ovr = overrides[i];
                 const tag = ovr?.type === 'ignore' ? '[IGNORED]'
-                  : ovr?.type === 'delete' ? '[DELETE OVERRIDE]'
+                  : ovr?.type === 'delete' ? '[DELETE]'
                   : ovr?.type === 'rename' ? `[RENAME -> ${basename(ovr.newPath)}]`
                   : '';
                 const isSelected = i === selectedIndex;

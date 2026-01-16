@@ -58,9 +58,9 @@ When run without `--execute`, you get a scrollable list of planned operations.
 
 Keyboard shortcuts:
 - Up/Down: move selection
-- I: ignore this file (no changes applied to it)
-- D: delete this file (removes source instead of moving)
-- R: rename this file
+- I: ignore this file (toggle on/off)
+- D: delete this file (toggle on/off; overrides move)
+- R: rename this file (press again to remove rename)
   - For move items: changes the destination filename.
   - For delete items: renames the file in-place (converts delete → rename).
 - Enter or Y: execute all actions
