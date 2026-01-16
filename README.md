@@ -103,78 +103,28 @@ bun run media-organizer.js ~/Pictures --execute
 - ink-scroll-list: fast, controlled list with selection
 - ink-text-input: inline text input for renaming
 
-## Binaries
-- macOS: dist/media-organizer-macos-arm64, dist/media-organizer-macos-x64
-- Linux: dist/media-organizer-linux-x64, dist/media-organizer-linux-arm64
-- Windows: dist/media-organizer-windows-x64
+## Binaries & Downloads
+- Get the latest prebuilt binaries: https://github.com/emilsall/media-organizer/releases
+- Included for each release:
+  - Self-contained binaries built with Bun’s compiler
+  - `SHA256SUMS.txt` for checksum verification
 
-These are self-contained binaries built with Bun’s compiler.
+Choose the right file for your system:
+- macOS (Apple Silicon): media-organizer-macos-arm64
+- macOS (Intel/x64): media-organizer-macos-x64
+- Linux (x64): media-organizer-linux-x64
+- Linux (arm64): media-organizer-linux-arm64
+- Windows (x64): media-organizer-windows-x64.exe
 
-### Build Locally (Current OS)
+### Build Locally (optional)
 ```bash
 bun run build
 # Output placed in dist/media-organizer-<platform>-<arch>
 ```
 
-To produce binaries for each OS/arch, run the build on that platform (or use CI):
-- macOS (arm64/x64): run bun run build on Apple Silicon and Intel Macs.
-- Linux (arm64/x64): run on AArch64/x86_64 hosts.
-- Windows (x64): run in PowerShell or Command Prompt.
-
-### Optional: Clean dist
-```bash
-bun run dist:clean
-```
-
-### CI Recommendation
-GitHub Actions workflow included: `.github/workflows/release.yml`.
-- Triggers on `v*` tags or manually via workflow dispatch.
-- Builds on macOS, Linux, and Windows and uploads artifacts.
-- Publishes a GitHub release with binaries and `SHA256SUMS.txt`.
-
-## Prebuilt Releases
-Download the latest prebuilt binaries from the GitHub Releases page:
-
-https://github.com/emilsall/media-organizer/releases
-
-Each release includes:
-- Platform-specific binaries (macOS arm64/x64, Linux x64/arm64, Windows x64)
-- `SHA256SUMS.txt` for checksum verification
-
-### Choosing the Right Binary
-- macOS: Apple Silicon → `media-organizer-macos-arm64`; Intel → `media-organizer-macos-x64`
-- Linux: `media-organizer-linux-x64` or `media-organizer-linux-arm64`
-- Windows: `media-organizer-windows-x64.exe`
-
-### Artifact Names (Quick Reference)
-- macOS (arm64): `media-organizer-macos-arm64`
-- macOS (x64/Intel): `media-organizer-macos-x64`
-- Linux (x64): `media-organizer-linux-x64`
-- Linux (arm64): `media-organizer-linux-arm64`
-- Windows (x64): `media-organizer-windows-x64.exe`
-
-Download them from the Releases page: https://github.com/emilsall/media-organizer/releases
-
-macOS Intel (x64):
-- Current releases target Apple Silicon (arm64). For Intel Macs, build locally to produce `media-organizer-macos-x64`.
-```bash
-# On an Intel Mac
-bun run build
-# Output: dist/media-organizer-macos-x64
-```
-Alternatively, you can run the CLI without a binary:
-```bash
-bun run media-organizer.js /path/to/media
-```
-
-Verify your architecture:
-```bash
-uname -m     # macOS/Linux: arm64 or x86_64
-```
-On Windows, open PowerShell and run:
-```powershell
-[Environment]::Is64BitOperatingSystem
-```
+Utilities
+- Clean dist: `bun run dist:clean`
+- CI: see .github/workflows/release.yml (builds all platforms on tag and publishes artifacts)
 
 ### macOS: First-Run Notes (Gatekeeper)
 Files downloaded from the internet may be quarantined. If you see a "file is damaged" or it’s immediately killed, remove the quarantine and make it executable:
@@ -219,8 +169,6 @@ chmod +x ./media-organizer-linux-x64
 # If permission denied, check mount options
 mount | grep noexec
 ```
-
-Linux arm64 builds are included in releases; if building locally, use an arm64 machine.
 
 ### Checksums
 Verify downloaded binaries against the release checksums:
