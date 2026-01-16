@@ -65,7 +65,7 @@ jobs:
           path: dist/media-organizer-windows-x64.exe
 
   build-macos-intel:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -96,10 +96,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build on arm64 via QEMU
-        uses: uraimo/run-on-arch-action@v2.6.1
+        uses: uraimo/run-on-arch-action@v3.0.1
         with:
           arch: aarch64
-          distro: ubuntu22.04
+          distro: ubuntu24.04
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
             apt-get update && apt-get install -y curl unzip
