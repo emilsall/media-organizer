@@ -163,6 +163,47 @@ async function getFileDate(filePath) {
   return stats.birthtime || stats.mtime;
 }
 
+function splitNameAndExt(filename) {
+  const ext = extname(filename);
+  const base = ext ? filename.slice(0, -ext.length) : filename;
+  return { base, ext };
+}
+
+async function pathExists(p) {
+  try {
+    await stat(p);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function resolveDestinationOperation(info, targetDir) {
+  const originalName = basename(info.path);
+  const { base, ext } = splitNameAndExt(originalName);
+
+  let i = 0;
+  while (true) {
+    const candidateName = i === 0 ? `${base}${ext}` : `${base}-${i}${ext}`;
+    const candidatePath = join(targetDir, candidateName);
+
+    const exists = await pathExists(candidatePath);
+    if (!exists) {
+      return { kind: 'move', target: candidatePath, targetDir };
+    }
+
+    // If candidate exists, check if duplicate (size + hash)
+    const candStats = await stat(candidatePath);
+    const candHash = await getFileHash(candidatePath, candStats.size);
+    if (candHash === info.hash) {
+      return { kind: 'delete', duplicateOf: candidatePath };
+    }
+
+    // Not a duplicate, try next incremental name
+    i += 1;
+  }
+}
+
 function isInOrganizedPath(root, fullPath) {
   const rel = relative(root, fullPath);
   if (!rel || rel.startsWith('..')) return false;
@@ -267,22 +308,35 @@ function MediaOrganizer({ dryRun = true, targetPath }) {
               source: info.path,
               reason: `Duplicate of ${info.originalPath}`
             });
-          } else {
-            const year = info.date.getFullYear();
-            const month = String(info.date.getMonth() + 1).padStart(2, '0');
-            const day = String(info.date.getDate()).padStart(2, '0');
+            continue;
+          }
 
-            const targetDir = join(targetPath, String(year), `${year}-${month}-${day}`);
-            const targetPath2 = join(targetDir, basename(info.path));
-            // Skip suggesting moves to the same location
-            if (info.path !== targetPath2) {
-              ops.push({
-                type: 'move',
-                source: info.path,
-                target: targetPath2,
-                targetDir
-              });
-            }
+          const year = info.date.getFullYear();
+          const month = String(info.date.getMonth() + 1).padStart(2, '0');
+          const day = String(info.date.getDate()).padStart(2, '0');
+
+          const targetDir = join(targetPath, String(year), `${year}-${month}-${day}`);
+          const firstCandidatePath = join(targetDir, basename(info.path));
+
+          // If the file is already at the first candidate location, skip
+          if (info.path === firstCandidatePath) {
+            continue;
+          }
+
+          const resolution = await resolveDestinationOperation(info, targetDir);
+          if (resolution.kind === 'delete') {
+            ops.push({
+              type: 'delete',
+              source: info.path,
+              reason: `Duplicate of ${resolution.duplicateOf}`
+            });
+          } else {
+            ops.push({
+              type: 'move',
+              source: info.path,
+              target: resolution.target,
+              targetDir: resolution.targetDir
+            });
           }
         }
 
@@ -515,8 +569,9 @@ function MediaOrganizer({ dryRun = true, targetPath }) {
                 const line = op.type === 'delete'
                   ? `DELETE: ${op.source} ${op.reason ? 'Reason: ' + op.reason : ''}`
                   : `MOVE: ${op.source} -> ${op.target}`;
+                const itemKey = `${op.type}:${op.source}:${op.type === 'move' ? op.target : ''}`;
                 return (
-                  <Box key={i}>
+                  <Box key={itemKey}>
                     <Text color={color}>
                       {isSelected ? '> ' : '  '}{line} {tag}
                     </Text>

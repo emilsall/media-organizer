@@ -1,6 +1,6 @@
 {
   "name": "media-organizer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Organize and deduplicate photos, RAW files, and videos by date",
   "type": "module",
   "bin": {
@@ -20,7 +20,7 @@
     "fujifilm",
     "media"
   ],
-  "author": "Your Name",
+  "author": "Emil Säll",
   "license": "MIT",
   "dependencies": {
     "ink": "^6.6.0",

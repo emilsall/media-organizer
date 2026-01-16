@@ -74,6 +74,7 @@ The list annotates your choices:
 ## Behavior Details
 - Date source: Attempts EXIF `DateTimeOriginal`; if missing, falls back to file creation/modification time.
 - Duplicates: Any two files with identical size and MD5 hash — one becomes a delete operation.
+- Destination conflicts: If the destination already has the same filename, the tool checks content. Identical files become a delete of the source; otherwise it auto-renames to `name-1.ext`, `name-2.ext`, etc., skipping numbers that collide with non-duplicates.
 - Organized folders: Existing `YEAR/YYYY-MM-DD/` trees are not reprocessed.
 - Cleanup: After execution, the tool removes empty directories up to the selected root, treating folders with only ignorable files as empty.
 - Safety: Dry run is the default; explicit confirmation is required to make changes (or pass `--execute`).
